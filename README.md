@@ -1,5 +1,5 @@
 # BQN-Gnuplot
-A BQN wrapper script for Gnuplot on linux
+A BQN wrapper script for Gnuplot on linux. Tested on CBQN.
 
 Usage:
 ------
