@@ -3,11 +3,12 @@ AssertStr ← ("Expected string, got: " ∾•Repr)!IsStr
 StrSplit ← (⊢-˜+`×¬)∘=⊔⊢
 StrFmt ← '%'{𝕗{∾1(↑∾·⥊𝕩≍˘↓)𝕨⊔˜(1-˜∾⟜0¬⊸×1+`∾⟜1)𝕗=𝕨}⟜(<⍟(2-≡))}
 Replace ← {a‿b𝕊𝕩: b¨⌾((a=𝕩)⊸/)𝕩}
-FmtData ← (⟨"¯-","‿ "⟩Replace´˜•Repr)¨ <˘⍟(1<=)
 
 Gnuplot ⇐ {𝕊 options:
 
   Set ← {∾{"set "∾𝕩∾"; "}¨∾⍟(≡-2˙)(0≠≠¨)⊸/((@+10)StrSplit AssertStr⊸⊢)⚇1 𝕩}
+
+  FmtData ← (⟨"¯-","‿ "⟩Replace´˜•Repr)¨ <˘⍟(1<=)
 
   fileName ← {𝕊n: tc←0 ⋄ {𝕊⍟(⊑⊢<⊸∊•file.List∘"") n StrFmt •Repr tc+↩1}} "temp_data%.txt"
   tmpFiles ← {
