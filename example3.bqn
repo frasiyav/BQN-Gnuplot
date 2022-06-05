@@ -1,13 +1,18 @@
 ⟨Gnuplot⟩ ← •Import "Gnuplot.bqn"
 
-r ← •Makerand 0
-•Show data3d ← (↕∘≠∾˘⊢)+`1-˜2×r.Range¨50‿2⥊0
+_vecfield ← {s 𝔽_𝕣 a‿b: >⥊(∾⟜𝔽)¨s÷˜(s×a)⊸+¨↕1+s×b-a}
+F ← -´÷⟜(+´⋆⟜2)∘+⚇1
+
+vecdata ← 4 (10÷˜⟨1‿¯1,¯1‿1⟩⊸F)_vecfield ⟨¯4‿¯3,4‿3⟩
 
 plt ← Gnuplot "
-  title 'Multiple Plots'
-  multiplot layout 2,1
+  xrange [-4:4]
+  yrange [-3:3]
+  xzeroaxis
+  yzeroaxis
+  key box height 1 opaque
 "
 
-⟨"title 'Plot 1'"⟩ plt.Multiplot ⟨data3d‿"using 1:2 with lines"⟩
-plt.MultiSplot´ ⟨"title 'Plot 2'"⟩‿⟨data3d‿"with impulses",data3d‿"with points"⟩
+plt.Plot vecdata‿"using 1:2:3:4 with vectors head filled"
+
 plt.Show @

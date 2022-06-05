@@ -1,17 +1,31 @@
 ⟨Gnuplot⟩ ← •Import "Gnuplot.bqn"
 
-r ← •Makerand 0
-data3d1 ← +`+`˘r.Range¨25‿25⥊0
-data3d2 ← +`+`˘1-˜2×r.Range¨25‿25⥊0
+_apply ← {s 𝔽_𝕣 a‿b: 𝔽¨s÷˜(s×a)⊸+¨↕1+s×b-a}
+F ← {𝕊x‿y: •math.Cos √+´x‿y⋆2}
+
+matrixdata1 ← 5 (•math.Sin·√·+´⋆⟜2) _apply ⟨¯5‿¯5,5‿5⟩
+matrixdata2 ← 5 (•math.Cos·√·+´⋆⟜2) _apply ⟨¯5‿¯5,5‿5⟩
 
 plt ← Gnuplot ⟨
-  "title '3D Plot' font 'Times New Roman,24'"
-  "ztics -100, 100, 500"
-  "terminal pngcairo"
-  "output 'output.png'"
+  "multiplot layout 1,2 margins 0.07,0.93,0.42,0.85 spacing 0.1,0.1 "
+  "pm3d at b"
+  "view 60,10"
 ⟩
 
-plt.SPlot data3d1‿"matrix with lines"
-plt.Splot data3d2‿"matrix with dots"
+plt.Unset ⟨
+  "xtics"
+  "ytics"
+  "ztics"
+  "border"
+  "colorbox"
+⟩
+
+plt.SPlot matrixdata1‿"matrix with lines title ''"
+
+plt.Subplot ⟨
+  "colorbox horizontal user size .4, 0.03 origin 0.3,.08"
+  "cbtics 0.5"
+⟩
+plt.SPlot matrixdata2‿"matrix with lines title ''"
 
 plt.Show @
