@@ -1,46 +1,57 @@
+gnuplotpipe ← "gnuplotpipe.so" •FFI "i32"‿"gnuplotpipe"‿">*u8:c8"
+
+lf ← @+10
 IsStr  ← (1==)◶0‿(∧´2=•Type¨)
-AssertStr ← ("Expected string, got: " ∾•Repr)!IsStr
-StrSplit ← (⊢-˜+`×¬)∘=⊔⊢
-StrFmt ← '%'{𝕗{∾1(↑∾·⥊𝕩≍˘↓)𝕨⊔˜(1-˜∾⟜0¬⊸×1+`∾⟜1)𝕗=𝕨}⟜(<⍟(2-≡))}
+AssertStr ← ("Expected string, got: "∾•Repr)!IsStr
+Split ← (⊢-˜+`×¬)∘=⊔⊢
+Join ← {∾1↓⥊(<𝕨)≍˘𝕩}
 Replace ← {a‿b𝕊𝕩: b¨⌾((a=𝕩)⊸/)𝕩}
-FmtData ← (⟨"¯-","‿ "⟩Replace´˜•Repr)¨ <˘⍟(1<=)
+FmtData ← ("¯-"Replace ' 'Join •Repr¨)¨ <˘⍟(1<=)
+Clean ← """'" Replace ((∨`∧∨`⌾⌽)' '⊸≠)⊸/
 
 Gnuplot ⇐ {𝕊 options:
 
-  Set ← {∾{"set "∾𝕩∾"; "}¨∾⍟(≡-2˙)(0≠≠¨)⊸/((@+10)StrSplit AssertStr⊸⊢)⚇1 𝕩}
+  ParseList ← {𝕊@:""; Clean¨∾´⚇¯1(0≠≠¨)⊸/(lf Split AssertStr⊸⊢)⚇1𝕩}
 
-  path ← •wdpath
-  fileName ← {𝕊n: tc←0 ⋄ {𝕊⍟(⊑⊢<⊸∊•file.List∘path) n StrFmt •Repr tc+↩1}} "temp_data%.txt"
-  tmpFiles ← {
-    files ← 2‿0⥊⟨⟩
-    Add ⇐ {files ∾˘↩ (n ← path ∾ '/' ∾ FileName @) ∾○< FmtData 𝕩 ⋄ "'"∾n∾"'"}
-    Write  ⇐ {𝕤 ⋄ •file.Lines¨˝files}
-    Remove ⇐ {𝕤 ⋄ •Sh "rm"<⊸∾ ⊏files}
-  }
+  Plt ← {
 
-  plt ← {
-    plots ← ⟨(Set options)‿""‿""⟩
-    Pfx ← {
-      plots{""⊸≡◶⟨⊢⊣"mixing plot and splot"!𝕩⊸≡, 𝕩⊸∾⟩⌾(1⊑¯1⊑⊢)𝕨}↩ 𝕩
+    sets‿unsets‿fns‿sfns‿data ← 5/⋈⟨⟩
+
+    S  ⇐ {sets  ∾↩   "set "⊸∾¨ParseList 𝕩} ⋄ S 𝕩
+    US ⇐ {unsets∾↩ "unset "⊸∾¨ParseList 𝕩}
+
+    Add ← (∾⟜<¨)⟜{
+      𝕊f‿o:
+        ¬1‿1≡•Type¨𝕩?
+          AssertStr o
+          ∾⟜(' '∾o)⌾⊑𝕊f;
+          𝕊a‿b: "'-'"‿𝕩;
+      IsStr 𝕩?
+        ⋈⟜⟨⟩𝕩;
+        "Data not flat"!(3⌊≡)◶⟨0,1,∧´·⥊IsStr¨∨·¬≡¨,0⟩𝕩
+        "Data rank > 2" !2≥=𝕩
+        "'-'"⋈𝕩
     }
-    Add ⇐ {plots{∾⟜𝕩⌾(2⊑¯1⊑⊢)𝕨}↩𝕩}','∾˜{
-      𝕨𝕊f‿o: (𝕨𝕊f)∾' '∾AssertStr⊸⊢o;
-      Pfx 𝕨
-      IsStr◶tmpFiles.Add‿⊢ 𝕩
-    } 
-    MultiAdd ⇐ {𝕊ptype:{ 
-      plots∾⟜<↩𝕨(""‿""∾˜⟜<""⊘(Set ⊣))𝕩
-      ptype⊸Add¨𝕩
-    }}
-    Fmt ⇐ {𝕤⋄ ∾';'∾´¨plots}
-  }
-  plot‿sPlot ⇐ {𝕩⊸plt.Add}¨"plot "‿"splot "
-  multiPlot‿multiSPlot ⇐ plt.MultiAdd¨"plot "‿"splot "
 
-  Show ⇐ {𝕤
-    tmpFiles.Write @
-    •Show 1⊑ •Sh "gnuplot"‿"-p"‿"-e"∾⟜<plt.Fmt @
-    tmpFiles.Remove @
+    E ← "Mixing Plot and SPlot"!·¬≠
+    P  ⇐ {E sfns ⋄ fns‿data Add↩𝕩}
+    SP ⇐ {E fns ⋄ sfns‿data Add↩𝕩}
+
+    Fmt ⇐ {𝕤⋄∾⟨
+      sets∾unsets
+      <∾"plot "‿"splot "(⊣∾⍟(×≠∘⊢)", " Join ⊢)¨fns‿sfns
+      ∾(FmtData∾·<"e"˙)¨(0≠≠¨)⊸/data
+    ⟩}
   }
-  Debug ⇐ {𝕤 ⋄ •Show plt.Fmt @}
+  
+  plts ← ⟨Plt options⟩
+  SubPlot ⇐ {plts∾↩ Plt 𝕩}
+  Plot    ⇐ {(⊢´plts).P  𝕩}
+  SPlot   ⇐ {(⊢´plts).SP 𝕩}
+  Set     ⇐ {(⊢´plts).S  𝕩}
+  UnSet   ⇐ {(⊢´plts).US 𝕩}
+
+  Format ← lf Join ·∾{𝕩.Fmt @}¨
+  Show  ⇐ {𝕤⋄ Gnuplotpipe lf∾˜Format plts}
+  Debug ⇐ {𝕤⋄ •Show Format plts}
 }
