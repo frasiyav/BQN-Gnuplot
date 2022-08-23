@@ -3,7 +3,6 @@ A BQN wrapper script for Gnuplot on linux. Tested on CBQN.
 
 Usage:
 ------
-`make` to build the shared object function which opens a pipe to gnuplot.
 
 Import:
 ```
