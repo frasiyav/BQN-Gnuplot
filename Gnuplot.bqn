@@ -1,6 +1,6 @@
 Gnuplotpipe ← {𝕊𝕩:
-  popen ← @ •FFI ⟨"*:i32","popen","*i32:c8","*i32:c8"⟩
-  fputs ← @ •FFI ⟨"i32","fputs","*i32:c8","*:i32"⟩
+  popen ← @ •FFI ⟨"*:i32","popen","*i8:c8","*i8:c8"⟩
+  fputs ← @ •FFI ⟨"i32","fputs","*i8:c8","*:i32"⟩
   pclose ← @ •FFI ⟨"i32", "pclose",">*:i32"⟩
   fp ← POpen ⟨"gnuplot --persist"∾@,"w"∾@⟩
   FPuts ⟨𝕩∾@,fp⟩
